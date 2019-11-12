@@ -40,9 +40,55 @@ function __autopair() {
   ((READLINE_POINT++))
 }
 
+function __autopair_remove() {
+  local previous_char="${READLINE_LINE:READLINE_POINT-1:1}"
+  local cursor_char="${READLINE_LINE:READLINE_POINT:1}"
+
+  local s
+  s="${READLINE_LINE::READLINE_POINT-1}"
+
+  local autopair_operated=false
+  local pair
+
+  # ()[]{}
+  for pair in "${__pairs[@]:2}"; do
+    if [[ "$previous_char" == "${pair:0:1}" ]] \
+      && [[ "$cursor_char" == "${pair:1:1}" ]]; then
+
+      s+="${READLINE_LINE:READLINE_POINT+1}"
+      autopair_operated=true
+    fi
+  done
+
+  # ""''
+  for pair in "${__pairs[@]:0:2}"; do
+    if [[ "$previous_char" == "${pair:0:1}" ]] \
+      && [[ "$cursor_char" == "${pair:1:1}" ]]; then
+
+      num_of_char="${READLINE_LINE//[^${pair:0:1}]/}"
+      num_of_char="${#num_of_char}"
+
+      if [[ "$((num_of_char % 2))" -eq 1 ]]; then
+        break
+      fi
+
+      s+="${READLINE_LINE:READLINE_POINT+1}"
+      autopair_operated=true
+    fi
+  done
+
+  if [[ "$autopair_operated" == 'false' ]]; then
+    s+="${READLINE_LINE:READLINE_POINT}"
+  fi
+
+  READLINE_LINE="$s"
+
+  ((READLINE_POINT--))
+}
+
 __pairs=(
   "''"
-  # '""'
+  '""'
   '()'
   '[]'
   '{}'
@@ -52,7 +98,9 @@ for pair in "${__pairs[@]}"; do
   bind -x "\"${pair:0:1}\": __autopair \\${pair:0:1} \\${pair:0:1} \\${pair:1:1}"
   bind -x "\"${pair:1:1}\": __autopair \\${pair:1:1} \\${pair:0:1} \\${pair:1:1}"
 done
+
+# `"` needs to be done separately
 bind -x "\"\\\"\": __autopair \\\" \\\" \\\""
 
+bind -x '"\C-h": __autopair_remove'
 unset pair
-unset __pairs
