@@ -31,6 +31,12 @@ Once installed, the "plugin" will automatically insert closing pairs whenever yo
 {}
 ```
 
+For instance, try typing and then deleting (using `Control-h` the following:
+
+```bash
+echo "$(echo "${var[@]}")"
+```
+
 ## Author
 Nikolaos Kakouros
 
