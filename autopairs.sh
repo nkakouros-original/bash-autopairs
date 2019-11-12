@@ -15,8 +15,7 @@ function __autopair() {
   s="${READLINE_LINE::READLINE_POINT}"
 
   if [[ "$opening_char" == "$closing_char" ]]; then
-    num_of_char="${READLINE_LINE::READLINE_POINT}"
-    num_of_char="${num_of_char//[^$typed_char]/}"
+    num_of_char="${READLINE_LINE//[^$typed_char]/}"
     num_of_char="${#num_of_char}"
 
     if [[ "$cursor_char" == "$closing_char" ]]; then
