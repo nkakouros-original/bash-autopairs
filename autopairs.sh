@@ -103,4 +103,11 @@ done
 bind -x "\"\\\"\": __autopair \\\" \\\" \\\""
 
 bind -x '"\C-h": __autopair_remove'
+
+if [[ -v BASH_AUTOPAIR_BACKSPACE ]]; then
+  # https://lists.gnu.org/archive/html/bug-bash/2019-11/msg00129.html
+  bind 'set bind-tty-special-chars off'
+  bind -x '"\C-?": __autopair_remove'
+fi
+
 unset pair
