@@ -22,6 +22,12 @@ instance:
 source ~/.config/bash/autopairs.sh
 ```
 
+To enable `Backspace`, add the line:
+
+```bash
+export BASH_AUTOPAIR_BACKSPACE=1
+```
+
 ## Usage
 Once installed, the "plugin" will automatically insert closing pairs whenever you type the opening part of any of the below parts:
 
