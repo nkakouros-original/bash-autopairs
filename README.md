@@ -35,6 +35,12 @@ Once installed, the "plugin" will automatically insert closing pairs whenever yo
 
 It will also delete pairs using `C-h` and `Baskspace`.
 
+For instance, try typing and then deleting the following:
+
+```bash
+echo "$(echo "${var[@]}")"
+```
+
 ## Author
 Nikolaos Kakouros
 
