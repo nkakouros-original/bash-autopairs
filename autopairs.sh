@@ -44,6 +44,10 @@ function __autopair_remove() {
   local previous_char="${READLINE_LINE:READLINE_POINT-1:1}"
   local cursor_char="${READLINE_LINE:READLINE_POINT:1}"
 
+  if [[ "${#READLINE_LINE}" -eq 0 || "$READLINE_POINT" -eq 0 ]]; then
+    return
+  fi
+
   local s
   s="${READLINE_LINE::READLINE_POINT-1}"
 
