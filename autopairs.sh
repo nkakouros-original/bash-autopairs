@@ -10,28 +10,22 @@ function __autopair() {
   local closing_char="$3"
   local cursor_char="${READLINE_LINE:READLINE_POINT:1}"
   local previous_char="${READLINE_LINE:READLINE_POINT-1:1}"
-  local match
+  local num_of_char
 
   local s
   s="${READLINE_LINE::READLINE_POINT}"
 
-  match="$(command grep -oE "\\${typed_char}" <<< "${READLINE_LINE}" || true )"
-  if [[ "${opening_char}" == "${closing_char}" ]]; then
-    match="$(command grep -oE "\\\\${typed_char}" <<< "${READLINE_LINE}" || true )"
-  fi
-  match="$(command tr -d '\\n' <<< "$match")"
-
-  local literals="${match//[^${typed_char}]/}"
-  local quotes_char="${READLINE_LINE//[^$typed_char]/}"
+  num_of_char="${READLINE_LINE//\\$typed_char}"
+  num_of_char="${num_of_char//[^${typed_char}]/}"
 
   if [[ "$previous_char"  == "\\" ]]; then
     s+="${typed_char}"
   elif [[ "$opening_char" == "$closing_char" ]]; then
-    if [[ "$(((${#quotes_char} - ${#literals}) % 2))" -eq 1 ]]; then
+    if [[ "$(( ${#num_of_char} % 2 ))" -eq 1 ]]; then
       s+="$typed_char"
     elif [[ "$cursor_char" == "$closing_char" ]]; then
       :
-    elif [[ "$(((${#quotes_char} - ${#literals}) % 2))" -eq 0 ]]; then
+    elif [[ "$(( ${#num_of_char} % 2 ))" -eq 0 ]]; then
       s+="$typed_char$typed_char"
     fi
   elif [[ "$typed_char" == "$opening_char" ]]; then
