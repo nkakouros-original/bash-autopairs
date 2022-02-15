@@ -10,7 +10,7 @@ function __autopair() {
   local closing_char="$3"
   local cursor_char="${READLINE_LINE:READLINE_POINT:1}"
   local previous_char="${READLINE_LINE:READLINE_POINT-1:1}"
-  local num_of_char="${READLINE_LINE//\\$typed_char}"
+  local num_of_char
 
   local s
   s="${READLINE_LINE::READLINE_POINT}"
@@ -18,6 +18,7 @@ function __autopair() {
   if [[ "$previous_char"  == "\\" ]]; then
     s+="$typed_char"
   elif [[ "$opening_char" == "$closing_char" ]]; then
+    num_of_char="${READLINE_LINE//\\$typed_char}"
     num_of_char="${num_of_char//[^$typed_char]/}"
     num_of_char="${#num_of_char}"
 
