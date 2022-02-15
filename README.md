@@ -38,7 +38,11 @@ Once installed, the "plugin" will automatically insert closing pairs whenever yo
 []
 {}
 ```
-
+Escaped character wont be auto paired to let you compose literals with ease.
+try typing:
+```bash
+sed "s/\"\'//g"
+```
 It will also delete pairs using `C-h` and `Baskspace`.
 
 For instance, try typing and then deleting the following:
