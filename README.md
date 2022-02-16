@@ -2,8 +2,9 @@
 A Bash plugin to automatically add closing pairs when typing in Bash's prompt.
 
 This is useful for people who:
-- are tired of typing the closing parts in commands like `command_here "$(other_command "${array[2]}")"`
-- may forget to add them
+- are tired of typing the closing parts in commands like:
+  `command_here "$(other_command "${array[2]}")"`,
+- may forget to add them.
 
 ## Limitations
 - The plugin will disable the `blink-matching-paren` readline option as [it
@@ -12,6 +13,7 @@ This is useful for people who:
 - If `BASH_AUTOPAIR_BACKSPACE` is set, the plugin will disable the
   `bind-tty-special-chars` option as it prevents Backspace from being mapped.
 
+These limitations cannot be overcome to the best of the author's knowledge.
 
 ## Installation
 Download and source the `autopairs.sh` file from within your `.bashrc` file. For
@@ -52,6 +54,23 @@ For instance, try typing and then deleting the following:
 
 ```bash
 echo "$(echo "${var[@]}")"
+```
+
+Moreover, it will insert double spaces when adding a space inside brackets and
+parentheses. For instance, typing `[` followed by a space will result in:
+
+```bash
+[ | ]  # where | is the cursor
+```
+
+This is compatible with the `magic-space` readline option. Backspace/Control-h
+will delete both spaces and result in `[]`. If, while at `[ | ]`, you press `]`,
+the cursor will jump over the space and land you into `[  ]|`. For instance, try
+typing the below:
+
+```bash
+if [[ "$my_var" == 1 ]]
+#  press `]` here  ^ (after you typed `1`)
 ```
 
 ## Author
