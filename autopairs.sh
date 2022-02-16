@@ -65,6 +65,7 @@ function __autopair_remove() {
 
       s+="${READLINE_LINE:READLINE_POINT+1}"
       autopair_operated=true
+      break
     fi
   done
 
