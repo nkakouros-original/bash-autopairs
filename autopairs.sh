@@ -15,10 +15,10 @@ function __autopair() {
   local s
   s="${READLINE_LINE::READLINE_POINT}"
 
-  if [[ "$previous_char"  == "\\" ]]; then
+  if [[ "$previous_char" == "\\" ]]; then
     s+="$typed_char"
   elif [[ "$opening_char" == "$closing_char" ]]; then
-    num_of_char="${READLINE_LINE//\\$typed_char}"
+    num_of_char="${READLINE_LINE//\\$typed_char/}"
     num_of_char="${num_of_char//[^$typed_char]/}"
     num_of_char="${#num_of_char}"
 
@@ -106,9 +106,8 @@ for pair in "${__pairs[@]}"; do
   bind -x "\"${pair:0:1}\": __autopair \\${pair:0:1} \\${pair:0:1} \\${pair:1:1}"
   bind -x "\"${pair:1:1}\": __autopair \\${pair:1:1} \\${pair:0:1} \\${pair:1:1}"
 done
-
-# `"` needs to be done separately
-bind -x "\"\\\"\": __autopair \\\" \\\" \\\""
+bind -x "\"\\\"\": __autopair \\\" \\\" \\\"" # `"` needs to be done separately
+unset pair
 
 bind -x '"\C-h": __autopair_remove'
 
@@ -117,5 +116,3 @@ if [[ -v BASH_AUTOPAIR_BACKSPACE ]]; then
   bind 'set bind-tty-special-chars off'
   bind -x '"\C-?": __autopair_remove'
 fi
-
-unset pair
