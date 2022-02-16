@@ -2,7 +2,7 @@
 
 # Show where the matching open paren is when inserting a closing one. Disabling
 # as it hijacks the `)`, `]` and `}` characters to enable blinking.
-bind "set blink-matching-paren on"
+bind "set blink-matching-paren off"
 
 function __autopair() {
   local typed_char="$1"
@@ -11,33 +11,41 @@ function __autopair() {
   local cursor_char="${READLINE_LINE:READLINE_POINT:1}"
   local previous_char="${READLINE_LINE:READLINE_POINT-1:1}"
   local next_char="${READLINE_LINE:READLINE_POINT+1:1}"
-  local num_of_char
 
-  local s
-  s="${READLINE_LINE::READLINE_POINT}"
+  local s="${READLINE_LINE::READLINE_POINT}"
 
+  # escaped character
   if [[ "$previous_char" == "\\" ]]; then
     s+="$typed_char"
+
+  # ''""``
   elif [[ "$opening_char" == "$closing_char" ]]; then
-    num_of_char="${READLINE_LINE//\\$typed_char/}"
+    local num_of_char="${READLINE_LINE//\\$typed_char/}"
     num_of_char="${num_of_char//[^$typed_char]/}"
     num_of_char="${#num_of_char}"
 
     if [[ "$((num_of_char % 2))" -eq 1 ]]; then
       s+="$typed_char"
-    elif [[ "$cursor_char" == "$closing_char" ]]; then
-      :
-    elif [[ "$((num_of_char % 2))" -eq 0 ]]; then
+    else
       s+="$typed_char$typed_char"
     fi
+
+  # [{(
   elif [[ "$typed_char" == "$opening_char" ]]; then
+    # TODO check right part string for balance
     s+="$opening_char$closing_char"
+
+  # [ | ]{ | }( | ) and pressing ]})
   elif [[ "$typed_char" == "$closing_char" && "$cursor_char" == " " &&
     "$next_char" == "$closing_char" ]]; then
     s+=' '
     ((READLINE_POINT++))
+
+  # ]}): cursor is already on closing char
   elif [[ "$cursor_char" == "$closing_char" ]]; then
+    # TODO check left and right string parts for balance
     :
+  # ]})
   else
     s+="$typed_char"
   fi
@@ -56,28 +64,25 @@ function __autopair_space() {
   local next_char="${READLINE_LINE:READLINE_POINT+1:1}"
   local num_of_char
 
-  local s
-  s="${READLINE_LINE::READLINE_POINT}"
+  local s="${READLINE_LINE::READLINE_POINT}"
 
-  # https://unix.stackexchange.com/questions/213799#answer-213821
   # The user pressed space, so we want to print at least one space no matter
   # what. If magic-space is enabled on the space bar, send a magic space. If
   # not, send a regular space.
   if [[ "$magic_space_enabled_on_space" -eq 1 ]]; then
+    # https://unix.stackexchange.com/questions/213799#answer-213821
     bind '"\e[0n": magic-space' && printf '\e[5n'
   else
     s+=' '
     ((READLINE_POINT++))
   fi
 
-  local autopair_operated=false
-  for pair in "${__pairs[@]:2}"; do
+  for pair in "${__pairs[@]:3}"; do
     local opening_char="${pair:0:1}"
     local closing_char="${pair:1:1}"
 
     if [[ "$previous_char" == "$opening_char" && "$cursor_char" == "$closing_char" ]]; then
       s+=" "
-      autopair_operated=true
       break
     fi
   done
@@ -88,64 +93,54 @@ function __autopair_space() {
 }
 
 function __autopair_remove() {
-  local previous_char="${READLINE_LINE:READLINE_POINT-1:1}"
-  local cursor_char="${READLINE_LINE:READLINE_POINT:1}"
-
+  # empty line or backspace at the start of line
   if [[ "${#READLINE_LINE}" -eq 0 || "$READLINE_POINT" -eq 0 ]]; then
     return
   fi
 
-  local s
-  s="${READLINE_LINE::READLINE_POINT-1}"
-
-  local autopair_operated=false
+  local s="${READLINE_LINE::READLINE_POINT-1}"
+  local previous_char="${READLINE_LINE:READLINE_POINT-1:1}"
+  local cursor_char="${READLINE_LINE:READLINE_POINT:1}"
   local pair
+  local offset=0
+  local loop_index=0
+  local num_of_char
 
-  # double space in ()[]{}
-  for pair in "${__pairs[@]:2}"; do
+  for pair in "${__pairs[@]}"; do
     local minus_2_char="${READLINE_LINE:READLINE_POINT-2:1}"
     local next_char="${READLINE_LINE:READLINE_POINT+1:1}"
 
+    # ()[]{}: delete first space in double space  (e.g. {A|B}, delete space "A")
     if [[ "$previous_char" == ' ' ]] \
       && [[ "$cursor_char" == ' ' ]] \
       && [[ "$minus_2_char" == "${pair:0:1}" ]] \
       && [[ "$next_char" == "${pair:1:1}" ]]; then
-      s+="${READLINE_LINE:READLINE_POINT+1}"
-      autopair_operated=true
-    fi
-  done
-
-  # ()[]{}
-  for pair in "${__pairs[@]:2}"; do
-    if [[ "$previous_char" == "${pair:0:1}" ]] \
-      && [[ "$cursor_char" == "${pair:1:1}" ]]; then
-
-      s+="${READLINE_LINE:READLINE_POINT+1}"
-      autopair_operated=true
+      offset=1
       break
-    fi
-  done
 
-  # ""''
-  for pair in "${__pairs[@]:0:2}"; do
-    if [[ "$previous_char" == "${pair:0:1}" ]] \
+    # all pairs: delete the opening
+    elif [[ "$previous_char" == "${pair:0:1}" ]] \
       && [[ "$cursor_char" == "${pair:1:1}" ]]; then
 
-      num_of_char="${READLINE_LINE//[^${pair:0:1}]/}"
-      num_of_char="${#num_of_char}"
+      # ''""``: delete results in balanced pairs on line
+      if [[ "$loop_index" -lt 3 ]]; then
+        num_of_char="${READLINE_LINE//[^${pair:0:1}]/}"
+        num_of_char="${#num_of_char}"
 
-      if [[ "$((num_of_char % 2))" -eq 1 ]]; then
-        break
+        if [[ "$((num_of_char % 2))" -eq 1 ]]; then
+          break
+        fi
       fi
 
-      s+="${READLINE_LINE:READLINE_POINT+1}"
-      autopair_operated=true
+      # all pairs: delete whole pair
+      offset=1
+      break
     fi
+
+    ((index++))
   done
 
-  if [[ "$autopair_operated" == 'false' ]]; then
-    s+="${READLINE_LINE:READLINE_POINT}"
-  fi
+  s+="${READLINE_LINE:READLINE_POINT+$offset}"
 
   READLINE_LINE="$s"
 
@@ -161,7 +156,10 @@ __pairs=(
   '{}'
 )
 
-for pair in "${__pairs[@]}"; do
+for pair in "${__pairs[@]:1:3}"; do
+  bind -x "\"${pair:0:1}\": __autopair \\${pair:0:1} \\${pair:0:1} \\${pair:1:1}"
+done
+for pair in "${__pairs[@]:3}"; do
   bind -x "\"${pair:0:1}\": __autopair \\${pair:0:1} \\${pair:0:1} \\${pair:1:1}"
   bind -x "\"${pair:1:1}\": __autopair \\${pair:1:1} \\${pair:0:1} \\${pair:1:1}"
 done
