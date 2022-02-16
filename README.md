@@ -36,6 +36,7 @@ Once installed, the "plugin" will automatically insert closing pairs whenever yo
 ```
 ""
 ''
+``
 ()
 []
 {}
