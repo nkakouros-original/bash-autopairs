@@ -156,7 +156,7 @@ __pairs=(
   '{}'
 )
 
-for pair in "${__pairs[@]:1:3}"; do
+for pair in "${__pairs[@]:0:3}"; do
   bind -x "\"${pair:0:1}\": __autopair \\${pair:0:1} \\${pair:0:1} \\${pair:1:1}"
 done
 for pair in "${__pairs[@]:3}"; do
