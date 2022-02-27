@@ -26,6 +26,8 @@ function __autopair() {
 
     if [[ "$((num_of_char % 2))" -eq 1 ]]; then
       s+="$typed_char"
+    elif [[ "$cursor_char" == "$closing_char" ]]; then
+      :
     else
       s+="$typed_char$typed_char"
     fi
