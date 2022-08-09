@@ -139,7 +139,7 @@ function __autopair_remove() {
       break
     fi
 
-    ((index++))
+    ((loop_index++))
   done
 
   s+="${READLINE_LINE:READLINE_POINT+$offset}"
