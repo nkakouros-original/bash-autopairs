@@ -67,6 +67,7 @@ function __autopair_space() {
   local num_of_char
 
   local s="${READLINE_LINE::READLINE_POINT}"
+  local rest="${READLINE_LINE:READLINE_POINT}"
 
   # The user pressed space, so we want to print at least one space no matter
   # what. If magic-space is enabled on the space bar, send a magic space. If
@@ -89,7 +90,7 @@ function __autopair_space() {
     fi
   done
 
-  s+="${READLINE_LINE:READLINE_POINT}"
+  s+="$rest"
 
   READLINE_LINE="$s"
 }
