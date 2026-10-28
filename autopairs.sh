@@ -70,15 +70,19 @@ function __autopair_space() {
   local rest="${READLINE_LINE:READLINE_POINT}"
 
   # The user pressed space, so we want to print at least one space no matter
-  # what. If magic-space is enabled on the space bar, send a magic space. If
-  # not, send a regular space.
-  if [[ "$magic_space_enabled_on_space" -eq 1 ]]; then
-    # https://unix.stackexchange.com/questions/213799#answer-213821
-    bind '"\e[0n": magic-space' && printf '\e[5n'
-  else
-    s+=' '
-    ((READLINE_POINT++))
+  # what. If magic-space is enabled on the space bar, do what it does, expand
+  # history before the cursor, here and now: having the terminal answer a
+  # status request (printf '\e[5n') that is bound to magic-space made the
+  # space arrive after the keys typed next when those come fast (tmux
+  # send-keys, a paste), so it landed out of place or got lost.
+  if [[ "$magic_space_enabled_on_space" -eq 1 ]] && [[ "$s" == *'!'* || "$s" == '^'* ]]; then
+    local expanded
+    if expanded="$(history -p -- "$s" 2>/dev/null)"; then
+      s="$expanded"
+    fi
   fi
+  s+=' '
+  READLINE_POINT=${#s}
 
   for pair in "${__pairs[@]:3}"; do
     local opening_char="${pair:0:1}"
